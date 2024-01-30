@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.nilscoding.maven</groupId>
     <artifactId>mvn-send-usage-infos</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>maven-plugin</packaging>
 
     <name>mvn-send-usage-infos</name>
-    <description><![CDATA[Maven Mojo for sending project metadata and usages to a REST endpoint.]]></description>
+    <description><![CDATA[Maven Mojo for sending project metadata and usages to a REST endpoint or writing to a file.]]></description>
     <url>https://github.com/NilsCoding/mvn-send-usage-infos</url>
 
     <properties>

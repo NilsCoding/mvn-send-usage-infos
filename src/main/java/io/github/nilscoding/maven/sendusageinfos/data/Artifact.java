@@ -9,7 +9,7 @@ import java.util.List;
  * @author NilsCoding
  */
 public class Artifact implements Serializable {
-    private static final long serialVersionUID = 822722436151357168L;
+    private static final long serialVersionUID = 5497108326195918954L;
 
     /**
      * Group ID.
@@ -31,6 +31,18 @@ public class Artifact implements Serializable {
      * List with licenses.
      */
     protected List<License> licenses;
+    /**
+     * Name.
+     */
+    protected String name;
+    /**
+     * Description.
+     */
+    protected String description;
+    /**
+     * Website URL.
+     */
+    protected String websiteUrl;
 
     /**
      * Creates a new instance.
@@ -51,6 +63,9 @@ public class Artifact implements Serializable {
         artifact.setGroupId(mavenProject.getGroupId());
         artifact.setArtifactId(mavenProject.getArtifactId());
         artifact.setVersion(mavenProject.getVersion());
+        artifact.setName(mavenProject.getName());
+        artifact.setDescription(mavenProject.getDescription());
+        artifact.setWebsiteUrl(mavenProject.getUrl());
         return artifact;
     }
 
@@ -149,5 +164,53 @@ public class Artifact implements Serializable {
      */
     public void setScope(String scope) {
         this.scope = scope;
+    }
+
+    /**
+     * Returns the name.
+     * @return name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets the name.
+     * @param name name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Returns the description.
+     * @return description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the description.
+     * @param description description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Returns the website URL.
+     * @return website URL
+     */
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    /**
+     * Sets the website URL.
+     * @param websiteUrl website URL to set
+     */
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
     }
 }
