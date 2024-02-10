@@ -1,0 +1,183 @@
+swagger: "2.0"
+info:
+  title: "Simple Project Usage Info Data"
+  version: "1.1.0"
+  license:
+    name: "MIT License"
+    url: "https://www.opensource.org/licenses/mit-license.php"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /usage-data:
+    post:
+      summary: "Stores usage info data"
+      description: "Stores usage info data, can add both new data and update existing data"
+      operationId: "storeUsageInfoData"
+      tags:
+        - usage-data
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "UsageData object that needs to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/UsageData"
+      responses:
+        "200":
+          description: "Okay"
+        "400":
+          description: "Invalid input"
+    get:
+      summary: "Searches for known artifacts"
+      description: "Searches for known artifacts"
+      operationId: "searchArtifacts"
+      tags:
+        - usage-data
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "groupId"
+          description: "Group ID"
+          type: "string"
+        - in: "query"
+          name: "artifactId"
+          description: "Artifact ID"
+          type: "string"
+        - in: "query"
+          name: "version"
+          description: "Version"
+          type: "string"
+      responses:
+        "200":
+          description: "Okay"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/UsageData"
+        "404":
+          description: "Not found"
+  /usage-data/referenced:
+    get:
+      summary: "Searches for referenced artifacts"
+      description: "Searches for referenced artifacts"
+      operationId: "searchReferencedArtifacts"
+      tags:
+        - usage-data
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "groupId"
+          description: "Group ID"
+          type: "string"
+        - in: "query"
+          name: "artifactId"
+          description: "Artifact ID"
+          type: "string"
+        - in: "query"
+          name: "version"
+          description: "Version"
+          type: "string"
+      responses:
+        "200":
+          description: "Okay"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/UsageData"
+        "404":
+          description: "Not found"
+  /usage-data/{groupId}/{artifactId}/{version}:
+    get:
+      summary: "Retrieves usage info data for a specific version of an artifact"
+      description: "Retrieves usage info data for a specific version of an artifact"
+      operationId: "getUsageInfo"
+      tags:
+        - usage-data
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: "groupId"
+          required: true
+          type: "string"
+          description: "Group ID"
+        - in: path
+          name: "artifactId"
+          type: string
+          required: true
+          description: "Artifact ID"
+        - in: path
+          name: "version"
+          type: "string"
+          required: true
+          description: "Version"
+      responses:
+        "200":
+          $ref: "#/definitions/UsageData"
+        "404":
+          description: "Not found"
+definitions:
+  Artifact:
+    type: "object"
+    description: "Artifact info"
+    required:
+      - groupId
+      - artifactId
+      - version
+    properties:
+      groupId:
+        type: "string"
+        description: "Maven Group ID"
+      artifactId:
+        type: "string"
+        description: "Maven Artifact ID"
+      version:
+        type: "string"
+        description: "Version"
+      scope:
+        type: "string"
+        description: "Maven scope"
+      licenses:
+        type: "array"
+        items:
+          $ref: "#/definitions/License"
+      name:
+        type: "string"
+        description: "Project name"
+      description:
+        type: "string"
+        description: "Project description"
+      websiteUrl:
+        type: "string"
+        description: "Website URL"
+  License:
+    type: "object"
+    description: "License"
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: "License name"
+      url:
+        type: string
+        description: "License Website URL"
+  UsageData:
+    type: "object"
+    description: "Usage data"
+    required:
+      - projectArtifact
+    properties:
+      projectArtifact:
+        $ref: "#/definitions/Artifact"
+      referencedArtifacts:
+        type: "array"
+        items:
+          $ref: "#/definitions/Artifact"

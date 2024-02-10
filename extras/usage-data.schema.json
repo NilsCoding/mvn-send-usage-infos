@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/NilsCoding/mvn-send-usage-infos/extras/usage-data.schema.json",
+  "title": "Simple project usage info data",
+  "type": "object",
+  "properties": {
+    "projectArtifact": {
+      "type": "object",
+      "description": "Main project artifact info",
+      "properties": {
+        "groupId": {
+          "type": "string",
+          "description": "Maven Group ID"
+        },
+        "artifactId": {
+          "type": "string",
+          "description": "Maven Artifact ID"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version"
+        },
+        "name": {
+          "type": "string",
+          "description": "Project name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description"
+        },
+        "websiteUrl": {
+          "type": "string",
+          "description": "Website URL"
+        },
+        "licenses": {
+          "type": "array",
+          "description": "List with licenses, can be empty/null",
+          "items": {
+            "type": "object",
+            "description": "License",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "License name"
+              },
+              "url": {
+                "type": "string",
+                "description": "License Website URL"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        }
+      },
+      "required": [
+        "groupId",
+        "artifactId",
+        "version"
+      ]
+    },
+    "referencedArtifacts": {
+      "type": "array",
+      "description": "List with referenced artifacts, can be empty/null",
+      "items": {
+        "type": "object",
+        "description": "Artifact info",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "description": "Maven Group ID"
+          },
+          "artifactId": {
+            "type": "string",
+            "description": "Maven Artifact ID"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version"
+          },
+          "scope": {
+            "type": "string",
+            "description": "Maven scope"
+          },
+          "licenses": {
+            "type": "array",
+            "description": "List with licenses, can be empty/null",
+            "items": {
+              "type": "object",
+              "description": "License",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "License Name"
+                },
+                "url": {
+                  "type": "string",
+                  "description": "License Website URL"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          },
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Project description"
+          },
+          "websiteUrl": {
+            "type": "string",
+            "description": "Website URL"
+          }
+        },
+        "required": [
+          "groupId",
+          "artifactId",
+          "version"
+        ]
+      }
+    }
+  },
+  "required": [
+    "projectArtifact"
+  ]
+}
