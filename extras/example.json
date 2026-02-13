@@ -3,6 +3,7 @@
     "groupId": "some.group.id",
     "artifactId": "the-artifact-id",
     "version": "1.0.0",
+    "packaging": "jar",
     "name": "The Artifact",
     "description": "Some Artifact",
     "websiteUrl": "https://github.com/"
@@ -13,6 +14,7 @@
       "artifactId": "artifact-one",
       "version": "1.0.1",
       "scope": "compile",
+      "packaging": "jar",
       "licenses": [
         {
           "name": "The Apache Software License, Version 2.0",
@@ -21,13 +23,18 @@
       ],
       "name": "Artifact One",
       "description": "One Artifact",
-      "websiteUrl": "https://github.com/"
+      "websiteUrl": "https://github.com/",
+      "dependencyTrail": [
+        "some.group.id:the-artifact-id:jar:1.0.0",
+        "some.group.id:artifact-one:jar:1.0.1"
+      ]
     },
     {
       "groupId": "some.group.id",
       "artifactId": "artifact-two",
       "version": "2.0.6",
       "scope": "compile",
+      "packaging": "jar",
       "licenses": [
         {
           "name": "The Apache License, Version 2.0",
@@ -36,7 +43,11 @@
       ],
       "name": "Artifact Two",
       "description": "Other Artifact",
-      "websiteUrl": "https://github.com/"
+      "websiteUrl": "https://github.com/",
+      "dependencyTrail": [
+        "some.group.id:the-artifact-id:jar:1.0.0",
+        "some.group.id:artifact-two:jar:2.0.6"
+      ]
     }
   ]
 }

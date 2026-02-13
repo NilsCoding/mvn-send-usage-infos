@@ -28,6 +28,10 @@ public class Artifact implements Serializable {
      */
     protected String scope;
     /**
+     * Packaging.
+     */
+    protected String packaging;
+    /**
      * List with licenses.
      */
     protected List<License> licenses;
@@ -43,6 +47,10 @@ public class Artifact implements Serializable {
      * Website URL.
      */
     protected String websiteUrl;
+    /**
+     * Dependency trail.
+     */
+    protected List<String> dependencyTrail;
 
     /**
      * Creates a new instance.
@@ -63,6 +71,7 @@ public class Artifact implements Serializable {
         artifact.setGroupId(mavenProject.getGroupId());
         artifact.setArtifactId(mavenProject.getArtifactId());
         artifact.setVersion(mavenProject.getVersion());
+        artifact.setPackaging(mavenProject.getPackaging());
         artifact.setName(mavenProject.getName());
         artifact.setDescription(mavenProject.getDescription());
         artifact.setWebsiteUrl(mavenProject.getUrl());
@@ -83,7 +92,32 @@ public class Artifact implements Serializable {
         artifact.setArtifactId(mavenArtifact.getArtifactId());
         artifact.setVersion(mavenArtifact.getVersion());
         artifact.setScope(mavenArtifact.getScope());
+        artifact.setPackaging(mavenArtifact.getType());
+        artifact.setDependencyTrail(mavenArtifact.getDependencyTrail());
         return artifact;
+    }
+
+    /**
+     * Returns the artifact's coordinates string (in GATV format, with type).
+     * @return artifact's coordinates string
+     */
+    public String getGatv() {
+        return this.groupId + ":" + this.artifactId + ":" + this.packaging + ":" + this.version;
+    }
+
+    /**
+     * Checks if this artifact is a direct dependency of the given other artifact (identified by its gatv).
+     * @param otherGatv other gatv to check for
+     * @return true if this artifact is a direct dependency of the given other artifact, false in all other cases
+     */
+    public boolean isDirectDependencyOf(String otherGatv) {
+        if ((otherGatv == null) || (otherGatv.isEmpty())) {
+            return false;
+        }
+        if ((this.dependencyTrail == null) || (this.dependencyTrail.size() != 2)) {
+            return false;
+        }
+        return (otherGatv.equals(this.dependencyTrail.get(0)));
     }
 
     /**
@@ -167,6 +201,22 @@ public class Artifact implements Serializable {
     }
 
     /**
+     * Returns the packaging.
+     * @return packaging
+     */
+    public String getPackaging() {
+        return packaging;
+    }
+
+    /**
+     * Sets the packaging.
+     * @param packaging packaging to set
+     */
+    public void setPackaging(String packaging) {
+        this.packaging = packaging;
+    }
+
+    /**
      * Returns the name.
      * @return name
      */
@@ -212,5 +262,21 @@ public class Artifact implements Serializable {
      */
     public void setWebsiteUrl(String websiteUrl) {
         this.websiteUrl = websiteUrl;
+    }
+
+    /**
+     * Returns the dependency trail, if any.
+     * @return dependency trail
+     */
+    public List<String> getDependencyTrail() {
+        return dependencyTrail;
+    }
+
+    /**
+     * Sets the dependency trail.
+     * @param dependencyTrail dependency trail to set
+     */
+    public void setDependencyTrail(List<String> dependencyTrail) {
+        this.dependencyTrail = dependencyTrail;
     }
 }

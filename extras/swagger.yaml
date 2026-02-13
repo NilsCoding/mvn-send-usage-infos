@@ -144,6 +144,9 @@ definitions:
       scope:
         type: "string"
         description: "Maven scope"
+      packaging:
+        type: "string"
+        description: "Packaging type"
       licenses:
         type: "array"
         items:
@@ -157,6 +160,11 @@ definitions:
       websiteUrl:
         type: "string"
         description: "Website URL"
+      dependencyTrail:
+        type: "array"
+        description: "Dependency trail information"
+        items:
+          type: "string"
   License:
     type: "object"
     description: "License"

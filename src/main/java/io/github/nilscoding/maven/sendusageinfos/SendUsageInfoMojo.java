@@ -16,7 +16,6 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -25,15 +24,18 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
+import javax.inject.Inject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Mojo to send usage infos (metadata and licenses) from referenced artifacts to a URL endpoint or save them to a file.
@@ -82,7 +84,7 @@ public class SendUsageInfoMojo extends AbstractMojo {
     /**
      * Maven project builder.
      */
-    @Component
+    @Inject
     private ProjectBuilder mavenProjectBuilder;
 
     /**
@@ -108,12 +110,18 @@ public class SendUsageInfoMojo extends AbstractMojo {
         if (tmpLocation.isEmpty()) {
             return;
         }
+        // split by space / line breaks
+        String[] tmpLocations = tmpLocation.split("[\n|\r]");
+        Set<String> locations = new LinkedHashSet<>();
+        for (String oneTmpLocation : tmpLocations) {
+            if (!oneTmpLocation.trim().isEmpty()) {
+                oneTmpLocation = oneTmpLocation.trim();
+                locations.add(oneTmpLocation);
+            }
+        }
 
-        boolean sendToWeb = (tmpLocation.startsWith("http://") || tmpLocation.startsWith("https://"));
-        boolean sendToFile = (tmpLocation.startsWith("file://") || !tmpLocation.contains("://"));
-
-        if ((sendToWeb == false) && (sendToFile == false)) {
-            log.warn("unsupported location type, not sending any data");
+        if (locations.isEmpty()) {
+            log.warn("unsupported location, not sending any data");
             return;
         }
 
@@ -156,10 +164,14 @@ public class SendUsageInfoMojo extends AbstractMojo {
 
         // send data
 
-        if (sendToWeb) {
-            this.sendDataViaWeb(usageData, log);
-        } else if (sendToFile) {
-            this.sendDataToFile(usageData, log);
+        for (String oneLocation : locations) {
+            if (oneLocation.startsWith("http://") || oneLocation.startsWith("https://")) {
+                this.sendDataViaWeb(usageData, oneLocation, log);
+            } else if (oneLocation.startsWith("@logging")) {
+                this.sendDataToLog(usageData, oneLocation, log);
+            } else {
+                this.sendDataToFile(usageData, oneLocation, log);
+            }
         }
     }
 
@@ -186,9 +198,10 @@ public class SendUsageInfoMojo extends AbstractMojo {
     /**
      * Sends the data via HTTP/HTTPS.
      * @param usageData usage data to send
+     * @param sendToUrl url to send data to
      * @param log       logging
      */
-    protected void sendDataViaWeb(UsageData usageData, Log log) {
+    protected void sendDataViaWeb(UsageData usageData, String sendToUrl, Log log) {
         if (usageData == null) {
             return;
         }
@@ -207,18 +220,19 @@ public class SendUsageInfoMojo extends AbstractMojo {
                     .hostnameVerifier((hostname, sslSession) -> true)
                     .build();
             Request.Builder reqBuilder = new Request.Builder()
-                    .url(this.urlLocation);
+                    .url(sendToUrl);
             if ((this.urlAuthHeader != null) && (this.urlAuthHeader.isEmpty() == false)) {
                 reqBuilder.addHeader("Authorization", this.urlAuthHeader);
             }
             RequestBody reqBody = RequestBody.create(bodyContent, MediaType.get("application/json"));
             reqBuilder.method(this.urlMethod, reqBody);
             Request req = reqBuilder.build();
-            log.info("sending usage info data to '" + this.urlLocation + "' ...");
+            log.info("sending usage info data to '" + sendToUrl + "' ...");
             Call call = client.newCall(req);
-            Response resp = call.execute();
-            int respCode = resp.code();
-            log.info("data sent (http " + respCode + ")");
+            try (Response resp = call.execute()) {
+                int respCode = resp.code();
+                log.info("data sent (http " + respCode + ")");
+            }
         } catch (Exception ex) {
             log.error("exception sending data via web: " + ex);
         }
@@ -226,15 +240,16 @@ public class SendUsageInfoMojo extends AbstractMojo {
 
     /**
      * Sends the data to local file.
-     * @param usageData usage data to send
-     * @param log       logging
+     * @param usageData    usage data to send
+     * @param fileLocation file location to write to
+     * @param log          logging
      */
-    protected void sendDataToFile(UsageData usageData, Log log) {
+    protected void sendDataToFile(UsageData usageData, String fileLocation, Log log) {
         if (usageData == null) {
             return;
         }
         try {
-            String location = this.urlLocation;
+            String location = fileLocation;
             if (location.startsWith("file://")) {
                 location = location.substring("file://".length());
             }
@@ -256,7 +271,7 @@ public class SendUsageInfoMojo extends AbstractMojo {
                 }
                 Gson gson = gsonBuilder.create();
                 try (Writer writer = new OutputStreamWriter(new FileOutputStream(f, false), StandardCharsets.UTF_8)) {
-                    log.info("writing usage info data to '" + this.urlLocation + "' ...");
+                    log.info("writing usage info data to '" + location + "' ...");
                     gson.toJson(usageData, writer);
                     writer.flush();
                     log.info("data has been written to file");
@@ -266,6 +281,96 @@ public class SendUsageInfoMojo extends AbstractMojo {
             }
         } catch (Exception ex) {
             log.error("exception sending data to file: " + ex);
+        }
+    }
+
+    /**
+     * Displays the data in build log.
+     * @param usageData usage data to display
+     * @param logInfo   log info
+     * @param log       logging
+     */
+    protected void sendDataToLog(UsageData usageData, String logInfo, Log log) {
+        if (usageData == null) {
+            return;
+        }
+        try {
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            // pretty-printing is enabled by default for log output
+            boolean usePrettyPrint = (this.prettyPrint == null) || (this.prettyPrint);
+            if (logInfo.contains("(single-line)")) {
+                usePrettyPrint = false;
+            }
+            if (usePrettyPrint) {
+                gsonBuilder.setPrettyPrinting();
+            }
+            Consumer<String> logTarget = log::info;
+            if (logInfo != null) {
+                if (logInfo.startsWith("@logging:debug")) {
+                    logTarget = log::debug;
+                } else if (logInfo.startsWith("@logging:warn")) {
+                    logTarget = log::warn;
+                } else if (logInfo.startsWith("@logging:error")) {
+                    logTarget = log::error;
+                }
+            }
+            Writer sw = new LineBasedWriter(logTarget);
+            Gson gson = gsonBuilder.create();
+            gson.toJson(usageData, sw);
+            sw.flush();
+        } catch (Exception ex) {
+            log.error("exception sending data to log: " + ex);
+        }
+    }
+
+    /**
+     * Line-based writer, forwarding each line to the given consumer.
+     */
+    private static class LineBasedWriter extends Writer {
+        /**
+         * Temporary line buffer.
+         */
+        private final StringBuilder buffer = new StringBuilder();
+        /**
+         * Target consumer to write to.
+         */
+        private final Consumer<String> consumer;
+
+        /**
+         * Creates a new instance with given consumer.
+         * @param consumer consumer
+         */
+        LineBasedWriter(Consumer<String> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void write(char[] cbuf, int off, int len) {
+            for (int i = off; i < off + len; i++) {
+                char c = cbuf[i];
+                if (c == '\n' || c == '\r') {
+                    this.writeBufferToConsumer();
+                } else {
+                    buffer.append(c);
+                }
+            }
+        }
+
+        @Override
+        public void flush() {
+            this.writeBufferToConsumer();
+        }
+
+        @Override
+        public void close() {
+            this.writeBufferToConsumer();
+        }
+
+        private void writeBufferToConsumer() {
+            if (buffer.length() > 0) {
+                this.consumer.accept(buffer.toString());
+                buffer.setLength(0);
+            }
         }
     }
 

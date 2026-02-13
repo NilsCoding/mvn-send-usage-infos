@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.nilscoding.maven</groupId>
     <artifactId>mvn-send-usage-infos</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
     <packaging>maven-plugin</packaging>
 
     <name>mvn-send-usage-infos</name>
@@ -15,9 +15,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <mavenversion>3.8.1</mavenversion>
+        <mavenversion>3.8.9</mavenversion>
         <mavenpluginhelperversion>3.15.2</mavenpluginhelperversion>
         <checkstyle.file>mvn-send-usage-infos-checkstyle.xml</checkstyle.file>
+        <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
     </properties>
 
     <licenses>
@@ -59,7 +60,12 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
+            <version>5.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-jvm</artifactId>
+            <version>5.3.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -102,7 +108,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.15.0</version>
                 <configuration>
                     <compilerArgs>
                         <!--<arg>-verbose</arg>-->
@@ -113,7 +119,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -149,8 +155,6 @@
                 </executions>
                 <configuration>
                     <configLocation>${checkstyle.file}</configLocation>
-                    <failOnViolation>false</failOnViolation>
-                    <failsOnError>false</failsOnError>
                     <sourceDirectories>
                         <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
                     </sourceDirectories>
@@ -159,7 +163,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>2.21.0</version>
                 <configuration>
                     <ruleSet>
                         <ignoreVersions>

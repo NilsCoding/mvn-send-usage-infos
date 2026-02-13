@@ -1,16 +1,18 @@
 # mvn-send-usage-infos
 
-**mvn-send-usage-infos** is a custom Maven Mojo to send data from project and referenced artifacts (group id, artifact id, version, licenses, name, description, website URL) in JSON format to a URL endpoint or save them to a file.
+**mvn-send-usage-infos** is a custom Maven Mojo to send data from project and referenced artifacts (group id, artifact id, version, licenses, name, description, website URL, packaging, dependency trail) in JSON format to a URL endpoint or save them to a file.
 
 Data will be sent in JSON format, no pretty-printing will be done for sending to URL endpoints, pretty-printing is enabled for writing to a file, but behaviour in both cases can be manually controlled.
 
-The structure will look like this. Since Mojo version 1.1.0 `name`, `description` and `websiteUrl` will be included if available.
+The structure will look like this.
+
 ```json
 {
   "projectArtifact": {
     "groupId": "some.group.id",
     "artifactId": "the-artifact-id",
     "version": "1.0.0",
+    "packaging": "jar",
     "name": "The Artifact",
     "description": "Some Artifact",
     "websiteUrl": "https://github.com/"
@@ -50,6 +52,45 @@ The structure will look like this. Since Mojo version 1.1.0 `name`, `description
 }
 ```
 
+Since Mojo version 1.1.0 `name`, `description` and `websiteUrl` will be included if available.
+
+Since Mojo version 1.2.0 `packaging` and `dependencyTrail` will be included if available.
+
+## additional notes
+
+### the `dependencyTrail`
+
+If available (mostly for referenced artifacts), the dependency trail will have at least two elements:
+- The first element will refer to the `projectArtifact`.
+- The last element will be the (referenced) artifact itself.
+
+So, if the dependency trail contains exactly 2 elements, it's a direct dependency.
+If it contains 3 or more elements, then it's an indirect dependency.
+This can be checked by using `Artifact.isDirectDependencyOf(otherGatv)` when using the data classes in custom code.
+
+Dependency trail elements will be in GATV format.
+
+### the artifact's GATV
+
+The `Artifact` class has a `getGatv()` method which returns the artifact coordinates, including the type.
+This format is often referred to as GATV.
+
+This method is useful if you use the data classes from this project to load the generated JSON file and process the dependency trails,
+because its values are the artifact coordinates given GATV format.
+
+### multiple output targets
+
+Since Mojo version 1.2.0 you can specify multiple lines in `urlLocation` to save/send the data to multiple targets at once.
+Targets must not be of the same type, so you can both save the data to a local file, while also sending it to a REST endpoint.
+When using multiple targets, make sure to cleanly separate them with new-lines (splitting will be done via regex `[\n|\r]`) and each entry will be trimmed.
+Also, empty lines will be ignored.
+
+### special output target `@logging`
+
+Since Mojo version 1.2.0 you can output the data to Maven build logging by specifying `@logging` in `urlLocation`.
+The output will be written in pretty-printing using `INFO` logging. Alternatively, you can specify `@logging:warn`, `@logging:error` or `@logging:debug` for a different log type.
+Appending `(single-line)` will suppress pretty-printing and output the data in one line. Please note that this option only works for logging target.
+
 ## pre-requisits
 As **mvn-send-usage-infos** is currently not available on Maven Central, you need to make sure that it is available to whatever system you're going to use it in your build.
 
@@ -70,7 +111,7 @@ To execute the Mojo in your build process, it needs to be configured in the `bui
 <plugin>
     <groupId>io.github.nilscoding.maven</groupId>
     <artifactId>mvn-send-usage-infos</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
     <executions>
         <execution>
             <phase>compile</phase>
@@ -94,7 +135,7 @@ Also, you might want to check the [default Maven lifecycle documentation](https:
 If you don't want to include the data in the pom file, you can install the plugin locally and invoke it on any project like this (from project folder, required pom.xml):
 
 ```bash
-mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.1.0:send-usage-infos -DurlLocation="http://some-server/"
+mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.2.0:send-usage-infos -DurlLocation="http://some-server/"
 ```
 
 ## configuration options
