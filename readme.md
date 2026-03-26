@@ -89,7 +89,15 @@ Also, empty lines will be ignored.
 
 Since Mojo version 1.2.0 you can output the data to Maven build logging by specifying `@logging` in `urlLocation`.
 The output will be written in pretty-printing using `INFO` logging. Alternatively, you can specify `@logging:warn`, `@logging:error` or `@logging:debug` for a different log type.
-Appending `(single-line)` will suppress pretty-printing and output the data in one line. Please note that this option only works for logging target.
+Appending `(single-line)` to the logging directive will suppress pretty-printing and output the data in one line. Please note that this option only works for the logging target.
+
+### skipping any actions on SNAPSHOT versions
+
+Since Mojo version 1.3.0 no actions will be performed if the project is a SNAPSHOT version.
+
+This decision was made to speed up build times during development.
+
+You can enable the processing of SNAPSHOT versions by setting the configuration option `includeSnapshots` to `true`.
 
 ## pre-requisits
 As **mvn-send-usage-infos** is currently not available on Maven Central, you need to make sure that it is available to whatever system you're going to use it in your build.
@@ -111,7 +119,7 @@ To execute the Mojo in your build process, it needs to be configured in the `bui
 <plugin>
     <groupId>io.github.nilscoding.maven</groupId>
     <artifactId>mvn-send-usage-infos</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
     <executions>
         <execution>
             <phase>compile</phase>
@@ -135,7 +143,7 @@ Also, you might want to check the [default Maven lifecycle documentation](https:
 If you don't want to include the data in the pom file, you can install the plugin locally and invoke it on any project like this (from project folder, required pom.xml):
 
 ```bash
-mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.2.0:send-usage-infos -DurlLocation="http://some-server/"
+mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.3.0:send-usage-infos -DurlLocation="http://some-server/"
 ```
 
 ## configuration options
@@ -161,6 +169,9 @@ If the URL endpoint requires authentication, then the configuration option `urlA
 This optional boolean flag (value `true` or `false`) controls if the JSON data should be pretty-printed or not.
 
 By default, JSON being sent to a web URL will not be pretty-printed, but JSON in file output will be pretty-printed.
+
+### includeSnapshots (optional, since 1.3.0)
+This optional boolean flag (value `true` or `false`, default: `false`) controls if this plugin performs its actions when being used on a SNAPSHOT project.
 
 ## copyright / license
 

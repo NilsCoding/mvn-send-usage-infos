@@ -68,6 +68,11 @@ public class SendUsageInfoMojo extends AbstractMojo {
      */
     @Parameter(property = "prettyPrint")
     private Boolean prettyPrint;
+    /**
+     * Flag to include snapshot versions.
+     */
+    @Parameter(property = "includeSnapshots")
+    private Boolean includeSnapshots;
 
     /**
      * Maven project.
@@ -102,6 +107,15 @@ public class SendUsageInfoMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         Log log = getLog();
         log.info("SendUsageInfo Mojo at work...");
+
+        // check for snapshot builds and skip processing if not enabled otherwise
+        boolean isSnapshot = this.project.getArtifact().isSnapshot();
+        if (isSnapshot) {
+            if (this.includeSnapshots == null || !this.includeSnapshots) {
+                log.info("Skipping processing of SNAPSHOT version (bypass with 'includeSnapshots' option)");
+                return;
+            }
+        }
 
         UsageData usageData = new UsageData();
 
