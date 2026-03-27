@@ -12,6 +12,7 @@ import okhttp3.Response;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.License;
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -199,12 +200,15 @@ public class SendUsageInfoMojo extends AbstractMojo {
             return null;
         }
         try {
-            ProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest();
-            projectBuildingRequest.setLocalRepository(this.session.getLocalRepository());
-            projectBuildingRequest.setRepositorySession(this.session.getRepositorySession());
+            ProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest(
+                    this.session.getProjectBuildingRequest()
+            );
+            projectBuildingRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            projectBuildingRequest.setProcessPlugins(false);
             ProjectBuildingResult pbRes = this.mavenProjectBuilder.build(artifact, projectBuildingRequest);
             return pbRes.getProject();
         } catch (Exception ex) {
+            getLog().warn("error building project for '" + artifact + "': " + ex);
             return null;
         }
     }
