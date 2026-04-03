@@ -91,6 +91,10 @@ Since Mojo version 1.2.0 you can output the data to Maven build logging by speci
 The output will be written in pretty-printing using `INFO` logging. Alternatively, you can specify `@logging:warn`, `@logging:error` or `@logging:debug` for a different log type.
 Appending `(single-line)` to the logging directive will suppress pretty-printing and output the data in one line. Please note that this option only works for the logging target.
 
+### custom output targets
+
+Since Mojo version 1.4.0 you can implement custom output targets by implementing the `IDataSink` interface, providing a ServiceLoader configuration for it and adding it as a plugin dependency.
+
 ### skipping any actions on SNAPSHOT versions
 
 Since Mojo version 1.3.0 no actions will be performed if the project is a SNAPSHOT version.
@@ -119,7 +123,7 @@ To execute the Mojo in your build process, it needs to be configured in the `bui
 <plugin>
     <groupId>io.github.nilscoding.maven</groupId>
     <artifactId>mvn-send-usage-infos</artifactId>
-    <version>1.3.1</version>
+    <version>1.4.0</version>
     <executions>
         <execution>
             <phase>compile</phase>
@@ -143,7 +147,7 @@ Also, you might want to check the [default Maven lifecycle documentation](https:
 If you don't want to include the data in the pom file, you can install the plugin locally and invoke it on any project like this (from project folder, required pom.xml):
 
 ```bash
-mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.3.1:send-usage-infos -DurlLocation="http://some-server/"
+mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.4.0:send-usage-infos -DurlLocation="http://some-server/"
 ```
 
 ## configuration options
@@ -172,6 +176,10 @@ By default, JSON being sent to a web URL will not be pretty-printed, but JSON in
 
 ### includeSnapshots (optional, since 1.3.0)
 This optional boolean flag (value `true` or `false`, default: `false`) controls if this plugin performs its actions when being used on a SNAPSHOT project.
+
+### customParameter (optional, since 1.4.0)
+If a custom `IDataSink` implementation is used,you can specify a custom parameter to be passed to the `IDataSink` via this configuration option.
+The value will be parsed as-is, so you can use it for any purpose in your custom implementation.
 
 ## copyright / license
 
