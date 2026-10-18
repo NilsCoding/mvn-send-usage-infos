@@ -23,12 +23,14 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.settings.Settings;
+
 import javax.inject.Inject;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Mojo to send usage infos (metadata and licenses) from referenced artifacts to a URL endpoint or save them to a file.
@@ -127,10 +129,11 @@ public class SendUsageInfoMojo extends AbstractMojo {
         String tmpLocation = this.urlLocation;
         tmpLocation = (tmpLocation != null) ? tmpLocation.trim() : "";
         if (tmpLocation.isEmpty()) {
+            log.warn("unsupported location, not sending any data");
             return;
         }
-        // split by space / line breaks
-        String[] tmpLocations = tmpLocation.split("[\n|\r]");
+        // split by line breaks
+        String[] tmpLocations = tmpLocation.split("\\R");
         Set<String> locations = new LinkedHashSet<>();
         for (String oneTmpLocation : tmpLocations) {
             if (!oneTmpLocation.trim().isEmpty()) {
@@ -138,10 +141,18 @@ public class SendUsageInfoMojo extends AbstractMojo {
                 locations.add(oneTmpLocation);
             }
         }
+        // remove empty locations (if any)
+        locations.removeIf(s -> (s == null) || (s.trim().isEmpty()));
 
         if (locations.isEmpty()) {
             log.warn("unsupported location, not sending any data");
             return;
+        }
+        if (log.isDebugEnabled()) {
+            String targetLocationsInfoStr = locations.stream()
+                    .map(location -> "'" + location + "'")
+                    .collect(Collectors.joining(", "));
+            log.debug("target locations: " + targetLocationsInfoStr);
         }
 
         // assign project artifact's data
@@ -193,6 +204,14 @@ public class SendUsageInfoMojo extends AbstractMojo {
         for (IDataSink oneCustomSink : customSinksItr) {
             allSinks.add(oneCustomSink);
         }
+
+        if (log.isDebugEnabled()) {
+            String allSinksInfoStr = allSinks.stream()
+                    .map(oneSink -> "'" + oneSink.getClass().getName() + "'")
+                    .collect(Collectors.joining(", "));
+            log.debug("registered sink classes: " + allSinksInfoStr);
+        }
+
         // define default sink
         IDataSink defaultSink = new FileSink();
 

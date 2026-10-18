@@ -82,7 +82,7 @@ because its values are the artifact coordinates given GATV format.
 
 Since Mojo version 1.2.0 you can specify multiple lines in `urlLocation` to save/send the data to multiple targets at once.
 Targets must not be of the same type, so you can both save the data to a local file, while also sending it to a REST endpoint.
-When using multiple targets, make sure to cleanly separate them with new-lines (splitting will be done via regex `[\n|\r]`) and each entry will be trimmed.
+When using multiple targets, make sure to cleanly separate them with new-lines (splitting will be done via regex `\\R`) and each entry will be trimmed.
 Also, empty lines will be ignored.
 
 ### special output target `@logging`
@@ -123,7 +123,7 @@ To execute the Mojo in your build process, it needs to be configured in the `bui
 <plugin>
     <groupId>io.github.nilscoding.maven</groupId>
     <artifactId>mvn-send-usage-infos</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <executions>
         <execution>
             <phase>compile</phase>
@@ -147,7 +147,7 @@ Also, you might want to check the [default Maven lifecycle documentation](https:
 If you don't want to include the data in the pom file, you can install the plugin locally and invoke it on any project like this (from project folder, required pom.xml):
 
 ```bash
-mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.4.0:send-usage-infos -DurlLocation="http://some-server/"
+mvn io.github.nilscoding.maven:mvn-send-usage-infos:1.4.1:send-usage-infos -DurlLocation="http://some-server/"
 ```
 
 ## configuration options
